@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="FileTransfer.Client/FileTransfer.Client.csproj" />
+  <Project Path="FileTransfer.Server/FileTransfer.Server.csproj" />
+  <Project Path="FileTransfer.Shared/FileTransfer.Shared.csproj" />
+</Solution>
