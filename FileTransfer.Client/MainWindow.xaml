@@ -1,12 +1,134 @@
 ﻿<Window x:Class="FileTransfer.Client.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:FileTransfer.Client"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="TCP File Transfer - Client" Height="700" Width="1100"
+        MinHeight="600" MinWidth="900" WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontSize="14">
 
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="160"/>
+        </Grid.RowDefinitions>
+
+        <!-- Thanh ket noi -->
+        <materialDesign:Card Grid.Row="0" Padding="16" Margin="0,0,0,12">
+            <DockPanel LastChildFill="False">
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="FolderNetwork" Width="32" Height="32"
+                                             Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                    <TextBlock Text="TCP File Transfer" FontSize="22" FontWeight="SemiBold"
+                               Margin="10,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <TextBox x:Name="txtHost" Width="170" Text="127.0.0.1" Margin="0,0,8,0"
+                             materialDesign:HintAssist.Hint="IP server"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+                    <TextBox x:Name="txtPort" Width="90" Text="9000" Margin="0,0,12,0"
+                             materialDesign:HintAssist.Hint="Port"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+                    <Button Content="Kết nối" Click="BtnConnect_Click" VerticalAlignment="Center"
+                            Style="{StaticResource MaterialDesignRaisedButton}"/>
+                    <Border x:Name="statusBadge" CornerRadius="14" Padding="12,6" Margin="12,0,0,0"
+                            VerticalAlignment="Center" Background="#33F44336">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon x:Name="statusIcon" Kind="LanDisconnect" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtStatus" Text="Chưa kết nối" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </DockPanel>
+        </materialDesign:Card>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Gui file -->
+            <materialDesign:Card Grid.Column="0" Padding="20">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Gửi file lên server" FontSize="18"
+                               FontWeight="SemiBold" Margin="0,0,0,12"/>
+
+                    <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">
+                        <TextBlock x:Name="txtFileName" Text="Chưa có file nào" FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <ProgressBar x:Name="progressBar" Height="8" Maximum="100" Value="0" Margin="0,10,0,6"/>
+                        <DockPanel>
+                            <TextBlock x:Name="txtPercent" Text="0%"/>
+                            <TextBlock x:Name="txtSpeed" HorizontalAlignment="Right"/>
+                        </DockPanel>
+                        <Border x:Name="hashBadge" Visibility="Collapsed" CornerRadius="14" Padding="12,6"
+                                Margin="0,10,0,0" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon x:Name="hashIcon" Kind="ShieldCheck" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtHash" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <Grid AllowDrop="True" Background="Transparent"
+                          DragOver="DropZone_DragOver" Drop="DropZone_Drop">
+                        <Rectangle RadiusX="12" RadiusY="12" Stroke="#8890CAF9"
+                                   StrokeThickness="2" StrokeDashArray="4 3"/>
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <materialDesign:PackIcon Kind="CloudUploadOutline" Width="64" Height="64"
+                                                     HorizontalAlignment="Center"
+                                                     Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                            <TextBlock Text="Kéo thả file vào đây" FontSize="16"
+                                       HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                            <TextBlock Text="hoặc" Opacity="0.6" HorizontalAlignment="Center"/>
+                            <Button Content="Chọn file" Margin="0,8,0,0" Click="BtnChoose_Click"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"/>
+                        </StackPanel>
+                    </Grid>
+                </DockPanel>
+            </materialDesign:Card>
+
+            <!-- File tren server -->
+            <materialDesign:Card Grid.Column="2" Padding="20">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Button DockPanel.Dock="Right" ToolTip="Làm mới" Click="BtnRefresh_Click"
+                                Style="{StaticResource MaterialDesignIconButton}">
+                            <materialDesign:PackIcon Kind="Refresh"/>
+                        </Button>
+                        <TextBlock Text="File trên server" FontSize="18" FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                    </DockPanel>
+
+                    <Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="0,12,0,0"
+                            Click="BtnDownload_Click" Style="{StaticResource MaterialDesignRaisedButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Download" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Tải về"/>
+                        </StackPanel>
+                    </Button>
+
+                    <ListView x:Name="lstFiles">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Tên file" Width="300" DisplayMemberBinding="{Binding Name}"/>
+                                <GridViewColumn Header="Kích thước" Width="110" DisplayMemberBinding="{Binding SizeText}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </DockPanel>
+            </materialDesign:Card>
+        </Grid>
+
+        <!-- Nhat ky -->
+        <materialDesign:Card Grid.Row="2" Margin="0,12,0,0" Padding="12">
+            <TextBox x:Name="txtLog" IsReadOnly="True" TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="12"/>
+        </materialDesign:Card>
     </Grid>
 </Window>
